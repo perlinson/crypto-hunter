@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Hunter Dashboard</title>
+    <title>🐂 Crypto Hunter - 加密货币监控仪表板</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: #fff;
             min-height: 100vh;
@@ -20,29 +16,59 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
-        header {
-            text-align: center;
-            padding: 30px 0;
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
             margin-bottom: 30px;
         }
         
-        h1 {
-            font-size: 2.5rem;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo h1 {
+            font-size: 2rem;
             background: linear-gradient(90deg, #f39c12, #e74c3c);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+            background-clip: text;
         }
         
-        .subtitle {
-            color: #888;
-            font-size: 1rem;
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            border-radius: 20px;
+            font-size: 0.9rem;
         }
         
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -51,228 +77,444 @@
         }
         
         .stat-card {
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
             padding: 20px;
             text-align: center;
-            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.1);
         }
         
         .stat-value {
             font-size: 2rem;
             font-weight: bold;
-            color: #f39c12;
+            margin-bottom: 8px;
         }
         
         .stat-label {
-            color: #888;
-            margin-top: 5px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
         }
         
-        .section {
+        .stat-card.gainers .stat-value { color: #2ecc71; }
+        .stat-card.volume .stat-value { color: #3498db; }
+        .stat-card.alerts .stat-value { color: #e74c3c; }
+        .stat-card.time .stat-value { color: #f39c12; }
+        
+        /* Alerts Section */
+        .alerts-section {
             background: rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
         }
         
         .section-title {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        .gainers-table {
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+        
+        .alert-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .alert-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .alert-card.high {
+            border-left-color: #e74c3c;
+            background: linear-gradient(90deg, rgba(231,76,60,0.1), transparent);
+        }
+        
+        .alert-card.medium {
+            border-left-color: #f39c12;
+            background: linear-gradient(90deg, rgba(243,156,18,0.1), transparent);
+        }
+        
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .alert-symbol {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .alert-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .alert-badge.high {
+            background: #e74c3c;
+            color: #fff;
+        }
+        
+        .alert-badge.medium {
+            background: #f39c12;
+            color: #000;
+        }
+        
+        .alert-price {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 8px;
+        }
+        
+        .alert-change {
+            font-size: 1rem;
+        }
+        
+        .alert-change.positive { color: #2ecc71; }
+        .alert-change.negative { color: #e74c3c; }
+        
+        /* Coins Table */
+        .coins-section {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .coins-table {
             width: 100%;
             border-collapse: collapse;
         }
         
-        .gainers-table th,
-        .gainers-table td {
-            padding: 12px;
+        .coins-table th,
+        .coins-table td {
+            padding: 14px 16px;
             text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
-        .gainers-table th {
-            color: #888;
-            font-weight: normal;
+        .coins-table th {
+            color: rgba(255,255,255,0.6);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
         }
         
-        .gain-positive {
-            color: #2ecc71;
+        .coins-table tr:hover {
+            background: rgba(255,255,255,0.05);
         }
         
-        .gain-negative {
-            color: #e74c3c;
-        }
-        
-        .volume-high {
-            color: #f39c12;
-        }
-        
-        .rank-1 { background: linear-gradient(90deg, #ffd700, #ffed4a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
-        .rank-2 { color: #c0c0c0; }
-        .rank-3 { color: #cd7f32; }
-        
-        .alert-item {
+        .coin-info {
             display: flex;
             align-items: center;
-            padding: 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid #f39c12;
+            gap: 12px;
         }
         
-        .alert-icon {
-            font-size: 1.5rem;
-            margin-right: 15px;
-        }
-        
-        .alert-content {
-            flex: 1;
-        }
-        
-        .alert-title {
+        .coin-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .alert-desc {
-            color: #888;
             font-size: 0.9rem;
         }
         
-        .priority-high { border-left-color: #e74c3c; }
-        .priority-medium { border-left-color: #f39c12; }
-        .priority-low { border-left-color: #2ecc71; }
+        .coin-name {
+            font-weight: 500;
+        }
         
-        .price-alert-form {
+        .coin-symbol {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+        }
+        
+        .change-cell {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            align-items: center;
+            gap: 6px;
         }
         
-        .price-alert-form input {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.1);
+        .change-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .change-badge.positive {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+        
+        .change-badge.negative {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        /* Settings Panel */
+        .settings-panel {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .form-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
             color: #fff;
+            font-size: 1rem;
         }
         
-        .price-alert-form button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(90deg, #f39c12, #e74c3c);
-            color: #fff;
-            cursor: pointer;
-            font-weight: bold;
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
         }
         
-        .refresh-btn {
-            float: right;
-            padding: 8px 15px;
+        .btn {
+            padding: 12px 24px;
             border: none;
             border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
+            font-size: 1rem;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         
-        .last-update {
-            text-align: right;
-            color: #666;
-            font-size: 0.8rem;
-            margin-top: 10px;
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: #fff;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .alerts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .coins-table {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🐂 Crypto Hunter</h1>
-            <p class="subtitle">加密货币异动监控仪表板</p>
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>🐂 Crypto Hunter</h1>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span id="status">运行中</span>
+                <span id="lastUpdate" style="color: rgba(255,255,255,0.6); font-size: 0.85rem;"></span>
+            </div>
         </header>
         
+        <!-- Stats -->
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="btc-price">$--</div>
-                <div class="stat-label">BTC 价格</div>
+            <div class="stat-card gainers">
+                <div class="stat-value" id="gainerCount">0</div>
+                <div class="stat-label">📈 涨幅榜异常</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="eth-price">$--</div>
-                <div class="stat-label">ETH 价格</div>
+            <div class="stat-card volume">
+                <div class="stat-value" id="volumeCount">0</div>
+                <div class="stat-label">📊 交易量突增</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="alerts-count">0</div>
-                <div class="stat-label">活跃预警</div>
+            <div class="stat-card alerts">
+                <div class="stat-value" id="alertCount">0</div>
+                <div class="stat-label">🚨 价格预警</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="gainers-count">0</div>
-                <div class="stat-label">涨幅榜异常</div>
+            <div class="stat-card time">
+                <div class="stat-value" id="monitorCount">0</div>
+                <div class="stat-label">👀 正在监控</div>
             </div>
         </div>
         
-        <div class="section">
-            <h2 class="section-title">🚀 24小时涨幅榜 <button class="refresh-btn" onclick="refreshData()">刷新</button></h2>
-            <table class="gainers-table">
+        <!-- Alerts -->
+        <section class="alerts-section">
+            <h2 class="section-title">
+                🚨 实时预警
+                <span id="alertBadge" style="background: #e74c3c; padding: 4px 12px; border-radius: 12px; font-size: 0.9rem;">0</span>
+            </h2>
+            <div class="alerts-grid" id="alertsContainer">
+                <!-- Alerts will be inserted here -->
+            </div>
+        </section>
+        
+        <!-- Coins Table -->
+        <section class="coins-section">
+            <h2 class="section-title">📊 热门加密货币</h2>
+            <table class="coins-table">
                 <thead>
                     <tr>
-                        <th>排名</th>
-                        <th>名称</th>
+                        <th>#</th>
+                        <th>币种</th>
                         <th>价格</th>
-                        <th>24h涨跌</th>
-                        <th>交易量/市值</th>
+                        <th>24h 涨跌</th>
+                        <th>24h 交易量</th>
+                        <th>市值</th>
                     </tr>
                 </thead>
-                <tbody id="gainers-body">
-                    <tr><td colspan="5" style="text-align:center;padding:30px;">加载中...</td></tr>
+                <tbody id="coinsTable">
+                    <!-- Coins will be inserted here -->
                 </tbody>
             </table>
-            <p class="last-update" id="last-update">--</p>
-        </div>
+        </section>
         
-        <div class="section">
-            <h2 class="section-title">⚡ 实时预警</h2>
-            <div id="alerts-container">
-                <p style="color:#888;text-align:center;padding:20px;">暂无预警</p>
+        <!-- Settings -->
+        <section class="settings-panel">
+            <h2 class="section-title">⚙️ 通知配置</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div>
+                    <h3 style="margin-bottom: 15px; color: #3498db;">📱 Telegram Bot</h3>
+                    <div class="form-group">
+                        <label class="form-label">Bot Token:</label>
+                        <input type="password" class="form-input" id="telegramToken" placeholder="输入 Telegram Bot Token">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chat ID:</label>
+                        <input type="text" class="form-input" id="telegramChatId" placeholder="输入 Chat ID">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveTelegramConfig()">保存 Telegram 配置</button>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 15px; color: #e74c3c;">🐦 飞书 Webhook</h3>
+                    <div class="form-group">
+                        <label class="form-label">Webhook URL:</label>
+                        <input type="text" class="form-input" id="feishuWebhook" placeholder="输入飞书 Webhook URL">
+                    </div>
+                    <button class="btn btn-success" onclick="saveFeishuConfig()">保存飞书配置</button>
+                </div>
             </div>
-        </div>
-        
-        <div class="section">
-            <h2 class="section-title">💰 价格预警设置</h2>
-            <div class="price-alert-form">
-                <input type="text" placeholder="输入币种符号 (如 BTC)" id="alert-symbol">
-                <input type="number" placeholder="目标价格" id="alert-price">
-                <select id="alert-direction" style="padding:12px;border-radius:10px;background:rgba(255,255,255,0.1);color:#fff;border:none;">
-                    <option value="above">高于</option>
-                    <option value="below">低于</option>
-                </select>
-                <button onclick="addPriceAlert()">添加预警</button>
-            </div>
-        </div>
+        </section>
     </div>
     
     <script>
-        // 模拟数据（实际使用时替换为真实API）
-        const mockData = {
-            btc: { price: 71130.93, change: 2.92 },
-            eth: { price: 2110.43, change: 2.88 },
-            gainers: [
-                { rank: 1, name: 'Pepe', symbol: 'PEPE', price: 0.00001234, change: 25.67, volumeRatio: 23.7 },
-                { rank: 2, name: 'Bonk', symbol: 'BONK', price: 0.00002345, change: 45.32, volumeRatio: 30.5 },
-                { rank: 3, name: 'Dogecoin', symbol: 'DOGE', price: 0.09721, change: 12.45, volumeRatio: 6.8 },
-                { rank: 4, name: 'Solana', symbol: 'SOL', price: 87.73, change: 13.63, volumeRatio: 7.6 },
-                { rank: 5, name: 'BNB', symbol: 'BNB', price: 643.45, change: 13.93, volumeRatio: 2.1 },
-            ]
+        // 配置
+        let config = {
+            telegram: { enabled: false, botToken: '', chatId: '' },
+            feishu: { enabled: false, webhookUrl: '' }
         };
         
+        // 模拟数据
+        let mockData = [
+            { rank: 1, name: 'Bitcoin', symbol: 'BTC', price: 71130.93, change: 2.92, volume: 41748899685, marketCap: 1420000000000 },
+            { rank: 2, name: 'Ethereum', symbol: 'ETH', price: 2110.43, change: 2.88, volume: 31968662174, marketCap: 254360000000 },
+            { rank: 3, name: 'Solana', symbol: 'SOL', price: 87.73, change: 13.63, volume: 3759738821, marketCap: 49780000000 },
+            { rank: 4, name: 'BNB', symbol: 'BNB', price: 643.45, change: 13.93, volume: 1840711073, marketCap: 87740000000 },
+            { rank: 5, name: 'Hyperliquid', symbol: 'HYPE', price: 31.55, change: 9.07, volume: 337865145, marketCap: 8200000000 },
+            { rank: 6, name: 'Pepe', symbol: 'PEPE', price: 0.00001234, change: 25.67, volume: 1234567890, marketCap: 5200000000 },
+            { rank: 7, name: 'Bonk', symbol: 'BONK', price: 0.00002345, change: 45.32, volume: 456789012, marketCap: 1500000000 },
+        ];
+        
+        // 生成预警数据
+        function generateAlerts(coins) {
+            const alerts = [];
+            const minGain = 15;
+            const minVolumeRatio = 5;
+            
+            coins.forEach(coin => {
+                const volumeRatio = (coin.volume / coin.marketCap) * 100;
+                
+                // 涨幅预警
+                if (coin.change >= minGain) {
+                    alerts.push({
+                        type: 'GAINER',
+                        priority: coin.change >= 30 ? 'high' : 'medium',
+                        symbol: coin.symbol,
+                        name: coin.name,
+                        price: formatPrice(coin.price),
+                        change: `+${coin.change.toFixed(2)}%`,
+                        message: `🚀 ${coin.symbol} (${coin.name}) 24h +${coin.change.toFixed(2)}% 📈`
+                    });
+                }
+                
+                // 交易量突增
+                if (volumeRatio >= minVolumeRatio && coin.change > 0) {
+                    alerts.push({
+                        type: 'VOLUME_SPIKE',
+                        priority: 'medium',
+                        symbol: coin.symbol,
+                        name: coin.name,
+                        price: formatPrice(coin.price),
+                        change: `📊 ${volumeRatio.toFixed(0)}%`,
+                        message: `📊 ${coin.symbol} 交易量激增 ${volumeRatio.toFixed(0)}%`
+                    });
+                }
+            });
+            
+            return alerts;
+        }
+        
+        // 格式化价格
         function formatPrice(price) {
             if (price >= 1) {
                 return '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -283,70 +525,146 @@
             }
         }
         
-        function renderGainers() {
-            const tbody = document.getElementById('gainers-body');
-            tbody.innerHTML = mockData.gainers.map(coin => `
-                <tr>
-                    <td><span class="rank-${coin.rank}">#${coin.rank}</span></td>
-                    <td>${coin.name} (${coin.symbol})</td>
-                    <td>${formatPrice(coin.price)}</td>
-                    <td class="gain-positive">+${coin.change.toFixed(2)}%</td>
-                    <td class="volume-high">${coin.volumeRatio.toFixed(1)}%</td>
-                </tr>
-            `).join('');
-            
-            document.getElementById('gainers-count').textContent = mockData.gainers.length;
+        // 格式化大数字
+        function formatNumber(num) {
+            if (num >= 1e12) return '$' + (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
+            return '$' + num.toLocaleString();
         }
         
-        function renderStats() {
-            document.getElementById('btc-price').textContent = formatPrice(mockData.btc.price);
-            document.getElementById('eth-price').textContent = formatPrice(mockData.eth.price);
-            document.getElementById('alerts-count').textContent = '3';
-        }
-        
-        function renderAlerts() {
-            const alerts = [
-                { icon: '🚀', title: 'PEPE 暴涨', desc: '24小时涨幅 +25.67%，交易量激增', priority: 'high' },
-                { icon: '📊', title: 'BONK 异动', desc: '交易量/市值比达 30.5%', priority: 'medium' },
-                { icon: '💰', title: 'BTC 逼近阻力位', desc: '当前 $71,130，目标 $75,000', priority: 'low' },
-            ];
+        // 渲染预警
+        function renderAlerts(alerts) {
+            const container = document.getElementById('alertsContainer');
+            const badge = document.getElementById('alertBadge');
             
-            const container = document.getElementById('alerts-container');
-            container.innerHTML = alerts.map(alert => `
-                <div class="alert-item priority-${alert.priority}">
-                    <span class="alert-icon">${alert.icon}</span>
-                    <div class="alert-content">
-                        <div class="alert-title">${alert.title}</div>
-                        <div class="alert-desc">${alert.desc}</div>
+            badge.textContent = alerts.length;
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">✅</div>
+                        <p>当前无异常异动</p>
                     </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert-card ${alert.priority}">
+                    <div class="alert-header">
+                        <span class="alert-symbol">${alert.symbol}</span>
+                        <span class="alert-badge ${alert.priority}">${alert.priority === 'high' ? '🚨 高优先' : '⚡ 中优先'}</span>
+                    </div>
+                    <div class="alert-price">${alert.name}</div>
+                    <div class="alert-change positive">${alert.change}</div>
                 </div>
             `).join('');
         }
         
-        function refreshData() {
-            document.getElementById('last-update').textContent = '最后更新: ' + new Date().toLocaleString();
-            renderGainers();
-            renderStats();
-            renderAlerts();
+        // 渲染币种列表
+        function renderCoins(coins) {
+            const tbody = document.getElementById('coinsTable');
+            tbody.innerHTML = coins.map(coin => `
+                <tr>
+                    <td>${coin.rank}</td>
+                    <td>
+                        <div class="coin-info">
+                            <div class="coin-icon">${coin.symbol[0]}</div>
+                            <div>
+                                <div class="coin-name">${coin.name}</div>
+                                <div class="coin-symbol">${coin.symbol}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${formatPrice(coin.price)}</td>
+                    <td>
+                        <span class="change-badge ${coin.change >= 0 ? 'positive' : 'negative'}">
+                            ${coin.change >= 0 ? '+' : ''}${coin.change.toFixed(2)}%
+                        </span>
+                    </td>
+                    <td>${formatNumber(coin.volume)}</td>
+                    <td>${formatNumber(coin.marketCap)}</td>
+                </tr>
+            `).join('');
         }
         
-        function addPriceAlert() {
-            const symbol = document.getElementById('alert-symbol').value.toUpperCase();
-            const price = parseFloat(document.getElementById('alert-price').value);
-            const direction = document.getElementById('alert-direction').value;
+        // 更新统计
+        function updateStats(alerts, coins) {
+            document.getElementById('gainerCount').textContent = alerts.filter(a => a.type === 'GAINER').length;
+            document.getElementById('volumeCount').textContent = alerts.filter(a => a.type === 'VOLUME_SPIKE').length;
+            document.getElementById('alertCount').textContent = alerts.filter(a => a.priority === 'high').length;
+            document.getElementById('monitorCount').textContent = coins.length;
+        }
+        
+        // 保存配置
+        function saveTelegramConfig() {
+            const token = document.getElementById('telegramToken').value;
+            const chatId = document.getElementById('telegramChatId').value;
             
-            if (symbol && price) {
-                alert(`✅ 已添加 ${symbol} 价格预警: 当价格${direction === 'above' ? '高于' : '低于'} $${price}`);
-                document.getElementById('alert-symbol').value = '';
-                document.getElementById('alert-price').value = '';
+            if (token && chatId) {
+                config.telegram = { enabled: true, botToken: token, chatId: chatId };
+                localStorage.setItem('cryptoHunter_config', JSON.stringify(config));
+                alert('✅ Telegram 配置已保存！');
+            } else {
+                alert('❌ 请填写完整的 Telegram 配置');
             }
         }
         
-        // 初始化
-        refreshData();
+        function saveFeishuConfig() {
+            const webhook = document.getElementById('feishuWebhook').value;
+            
+            if (webhook) {
+                config.feishu = { enabled: true, webhookUrl: webhook };
+                localStorage.setItem('cryptoHunter_config', JSON.stringify(config));
+                alert('✅ 飞书配置已保存！');
+            } else {
+                alert('❌ 请填写飞书 Webhook URL');
+            }
+        }
         
-        // 自动刷新（每5分钟）
-        setInterval(refreshData, 300000);
+        // 加载配置
+        function loadConfig() {
+            const saved = localStorage.getItem('cryptoHunter_config');
+            if (saved) {
+                config = JSON.parse(saved);
+                if (config.telegram) {
+                    document.getElementById('telegramToken').value = config.telegram.botToken || '';
+                    document.getElementById('telegramChatId').value = config.telegram.chatId || '';
+                }
+                if (config.feishu) {
+                    document.getElementById('feishuWebhook').value = config.feishu.webhookUrl || '';
+                }
+            }
+        }
+        
+        // 模拟实时数据更新
+        function simulateDataUpdate() {
+            mockData = mockData.map(coin => ({
+                ...coin,
+                price: coin.price * (1 + (Math.random() - 0.5) * 0.01),
+                change: coin.change + (Math.random() - 0.5) * 2
+            }));
+            
+            const alerts = generateAlerts(mockData);
+            renderAlerts(alerts);
+            renderCoins(mockData);
+            updateStats(alerts, mockData);
+            
+            document.getElementById('lastUpdate').textContent = `(${new Date().toLocaleTimeString()})`;
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+            const alerts = generateAlerts(mockData);
+            renderAlerts(alerts);
+            renderCoins(mockData);
+            updateStats(alerts, mockData);
+            
+            // 每5秒模拟数据更新
+            setInterval(simulateDataUpdate, 5000);
+        });
     </script>
 </body>
 </html>

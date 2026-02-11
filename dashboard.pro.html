@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Hunter Pro - 高级加密货币交易平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(12px); }
+        .tab-active { border-bottom: 2px solid #8b5cf6; color: #8b5cf6; }
+        .glow-purple { box-shadow: 0 0 30px rgba(139, 92, 246, 0.3); }
+        .glow-green { box-shadow: 0 0 30px rgba(34, 197, 94, 0.3); }
+        .glow-red { box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
+        .glow-yellow { box-shadow: 0 0 30px rgba(234, 179, 8, 0.3); }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.6); }
+        }
+        .animate-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 min-h-screen">
+    <!-- 顶部导航 -->
+    <nav class="glass border-b border-white/10 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🐂</span>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-purple-500 bg-clip-text text-transparent">
+                        Crypto Hunter Pro
+                    </h1>
+                    <p class="text-xs text-gray-400">高级加密货币交易平台</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-400" id="last-update">--</span>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs text-green-400">API 在线</span>
+                </div>
+                <button onclick="openTab('dashboard')" class="px-3 py-1.5 text-sm bg-purple-600 hover:bg-purple-500 rounded-lg transition">
+                    仪表板
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Tab 导航 -->
+    <div class="max-w-7xl mx-auto px-4 py-4">
+        <div class="flex gap-4 border-b border-white/10 pb-2 overflow-x-auto">
+            <button onclick="openTab('dashboard')" id="tab-dashboard" class="tab-active px-4 py-2 text-sm font-medium whitespace-nowrap">
+                📊 仪表板
+            </button>
+            <button onclick="openTab('portfolio')" id="tab-portfolio" class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white whitespace-nowrap">
+                💼 投资组合
+            </button>
+            <button onclick="openTab('trading')" id="tab-trading" class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white whitespace-nowrap">
+                📈 模拟交易
+            </button>
+            <button onclick="openTab('alerts')" id="tab-alerts" class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white whitespace-nowrap">
+                🔔 智能提醒
+            </button>
+            <button onclick="openTab('analysis')" id="tab-analysis" class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white whitespace-nowrap">
+                📉 趋势分析
+            </button>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="max-w-7xl mx-auto px-4 pb-8">
+        
+        <!-- ==================== 仪表板 Tab ==================== -->
+        <div id="content-dashboard" class="tab-content">
+            <!-- 统计卡片 -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                <div class="glass rounded-xl p-4 border border-white/10">
+                    <p class="text-gray-400 text-xs">BTC 价格</p>
+                    <p class="text-xl font-bold text-yellow-400" id="btc-price">--</p>
+                    <p class="text-xs" id="btc-change">--</p>
+                </div>
+                <div class="glass rounded-xl p-4 border border-white/10">
+                    <p class="text-gray-400 text-xs">ETH 价格</p>
+                    <p class="text-xl font-bold text-purple-400" id="eth-price">--</p>
+                    <p class="text-xs" id="eth-change">--</p>
+                </div>
+                <div class="glass rounded-xl p-4 border border-white/10">
+                    <p class="text-gray-400 text-xs">总持仓价值</p>
+                    <p class="text-xl font-bold text-green-400" id="portfolio-value">--</p>
+                    <p class="text-xs" id="portfolio-profit">--</p>
+                </div>
+                <div class="glass rounded-xl p-4 border border-white/10">
+                    <p class="text-gray-400 text-xs">模拟资金</p>
+                    <p class="text-xl font-bold text-blue-400" id="paper-balance">$10,000</p>
+                    <p class="text-xs text-gray-400">模拟交易</p>
+                </div>
+                <div class="glass rounded-xl p-4 border border-white/10">
+                    <p class="text-gray-400 text-xs">活跃预警</p>
+                    <p class="text-xl font-bold text-orange-400" id="active-alerts">0</p>
+                    <p class="text-xs text-gray-400">待触发</p>
+                </div>
+            </div>
+
+            <!-- 价格走势图表 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="lg:col-span-2 glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        📈 BTC/ETH 价格走势
+                    </h2>
+                    <canvas id="priceChart" height="300"></canvas>
+                </div>
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4">📊 市值占比</h2>
+                    <canvas id="marketChart" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- 涨跌幅排行 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        🚀 涨幅榜 Top 10
+                    </h2>
+                    <div class="overflow-x-auto scrollbar-thin">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-white/10">
+                                    <th class="pb-2">#</th>
+                                    <th class="pb-2">币种</th>
+                                    <th class="pb-2">价格</th>
+                                    <th class="pb-2">24h</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gainers-table" class="divide-y divide-white/5">
+                                <tr><td colspan="4" class="py-4 text-center text-gray-400">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        📉 跌幅榜 Top 10
+                    </h2>
+                    <div class="overflow-x-auto scrollbar-thin">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-white/10">
+                                    <th class="pb-2">#</th>
+                                    <th class="pb-2">币种</th>
+                                    <th class="pb-2">价格</th>
+                                    <th class="pb-2">24h</th>
+                                </tr>
+                            </thead>
+                            <tbody id="losers-table" class="divide-y divide-white/5">
+                                <tr><td colspan="4" class="py-4 text-center text-gray-400">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 投资组合 Tab ==================== -->
+        <div id="content-portfolio" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 持仓概览 -->
+                <div class="lg:col-span-2 glass rounded-xl p-6 border border-white/10">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold">💼 我的持仓</h2>
+                        <button onclick="openModal('addHolding')" class="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-sm rounded-lg transition">
+                            + 添加持仓
+                        </button>
+                    </div>
+                    
+                    <!-- 汇总卡片 -->
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <p class="text-gray-400 text-xs">总价值</p>
+                            <p class="text-xl font-bold text-green-400" id="pf-total-value">$0</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <p class="text-gray-400 text-xs">总成本</p>
+                            <p class="text-xl font-bold text-blue-400" id="pf-total-cost">$0</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <p class="text-gray-400 text-xs">收益率</p>
+                            <p class="text-xl font-bold" id="pf-total-profit">+0.00%</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 持仓列表 -->
+                    <div class="overflow-x-auto scrollbar-thin">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-white/10">
+                                    <th class="pb-2">币种</th>
+                                    <th class="pb-2">数量</th>
+                                    <th class="pb-2">均价</th>
+                                    <th class="pb-2">当前价</th>
+                                    <th class="pb-2">价值</th>
+                                    <th class="pb-2">盈亏</th>
+                                    <th class="pb-2">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="holdings-table" class="divide-y divide-white/5">
+                                <tr><td colspan="7" class="py-8 text-center text-gray-400">暂无持仓</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 交易历史 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4">📜 交易历史</h2>
+                    <div class="space-y-3 max-h-96 overflow-y-auto scrollbar-thin" id="pf-history">
+                        <p class="text-gray-400 text-center py-4">暂无交易记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 模拟交易 Tab ==================== -->
+        <div id="content-trading" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 交易面板 -->
+                <div class="lg:col-span-2 glass rounded-xl p-6 border border-white/10">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold">📈 模拟交易</h2>
+                        <button onclick="resetPaperTrading()" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-sm rounded-lg transition">
+                            🔄 重置账户
+                        </button>
+                    </div>
+                    
+                    <!-- 统计卡片 -->
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <p class="text-gray-400 text-xs">账户余额</p>
+                            <p class="text-xl font-bold text-green-400" id="pt-balance">$10,000</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <p class="text-gray-400 text-xs">总收益</p>
+                            <p class="text-xl font-bold" id="pt-profit">$0</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <p class="text-gray-400 text-xs">交易次数</p>
+                            <p class="text-xl font-bold text-purple-400" id="pt-trades">0</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <p class="text-gray-400 text-xs">胜率</p>
+                            <p class="text-xl font-bold text-yellow-400" id="pt-winrate">0%</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 交易表单 -->
+                    <div class="bg-white/5 rounded-lg p-6 mb-6">
+                        <div class="grid grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">交易对</label>
+                                <select id="trade-symbol" class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                                    <option value="BTC">BTC/USDT</option>
+                                    <option value="ETH">ETH/USDT</option>
+                                    <option value="SOL">SOL/USDT</option>
+                                    <option value="BNB">BNB/USDT</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">价格</label>
+                                <input type="number" id="trade-price" class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm" placeholder="市价">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">数量</label>
+                                <input type="number" id="trade-amount" class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">类型</label>
+                                <select id="trade-type" class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                                    <option value="market">市价</option>
+                                    <option value="limit">限价</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="executeTrade('buy')" class="flex-1 bg-green-600 hover:bg-green-500 py-3 rounded-lg font-semibold transition">
+                                🟢 买入
+                            </button>
+                            <button onclick="executeTrade('sell')" class="flex-1 bg-red-600 hover:bg-red-500 py-3 rounded-lg font-semibold transition">
+                                🔴 卖出
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 当前持仓 -->
+                    <h3 class="text-sm font-semibold mb-3">📦 当前持仓</h3>
+                    <div class="space-y-2" id="pt-positions">
+                        <p class="text-gray-400 text-center py-4">暂无持仓</p>
+                    </div>
+                </div>
+                
+                <!-- 交易历史 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4">📜 成交记录</h2>
+                    <div class="space-y-2 max-h-[500px] overflow-y-auto scrollbar-thin" id="pt-history">
+                        <p class="text-gray-400 text-center py-4">暂无成交记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 智能提醒 Tab ==================== -->
+        <div id="content-alerts" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 添加提醒 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4">🔔 添加提醒</h2>
+                    
+                    <!-- 价格提醒 -->
+                    <div class="bg-white/5 rounded-lg p-4 mb-4">
+                        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                            💰 价格提醒
+                        </h3>
+                        <div class="grid grid-cols-4 gap-3">
+                            <input type="text" id="alert-symbol" placeholder="币种 (BTC)" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                            <input type="number" id="alert-price" placeholder="目标价格" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                            <select id="alert-direction" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                                <option value="above">🚀 突破</option>
+                                <option value="below">📉 跌破</option>
+                            </select>
+                            <button onclick="addPriceAlert()" class="bg-purple-600 hover:bg-purple-500 rounded-lg text-sm transition">
+                                添加
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 支撑/阻力位 -->
+                    <div class="bg-white/5 rounded-lg p-4 mb-4">
+                        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                            📊 支撑/阻力位提醒
+                        </h3>
+                        <div class="grid grid-cols-4 gap-3">
+                            <input type="text" id="sr-symbol" placeholder="币种" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                            <input type="number" id="sr-level" placeholder="价格位" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                            <select id="sr-type" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                                <option value="both">支撑 & 阻力</option>
+                                <option value="support">仅支撑</option>
+                                <option value="resistance">仅阻力</option>
+                            </select>
+                            <button onclick="addSRError!");return false;" class="bg-yellow-600 hover:bg-yellow-500 rounded-lg text-sm transition">
+                                添加
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 添加多个支撑/阻力位 -->
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold mb-3">📈 批量添加支撑/阻力位</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="text" id="sr-multi-symbol" placeholder="币种 (如 BTC)" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                            <input type="text" id="sr-multi-levels" placeholder="价格位 (逗号分隔, 如 70000,75000,80000)" class="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm">
+                        </div>
+                        <button onclick="addMultiSR()" class="mt-3 w-full bg-yellow-600 hover:bg-yellow-500 rounded-lg text-sm py-2 transition">
+                            批量添加
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 提醒列表 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold">📋 提醒列表</h2>
+                        <button onclick="resetAlerts()" class="text-xs text-gray-400 hover:text-white">
+                            重置已触发
+                        </button>
+                    </div>
+                    
+                    <!-- 价格提醒 -->
+                    <div class="mb-4">
+                        <h3 class="text-xs text-gray-400 mb-2">价格提醒</h3>
+                        <div class="flex flex-wrap gap-2" id="price-alerts-list">
+                            <p class="text-gray-400 text-sm">暂无提醒</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 支撑/阻力位 -->
+                    <div>
+                        <h3 class="text-xs text-gray-400 mb-2">支撑/阻力位</h3>
+                        <div class="flex flex-wrap gap-2" id="sr-alerts-list">
+                            <p class="text-gray-400 text-sm">暂无设置</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 触发记录 -->
+                <div class="lg:col-span-2 glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4">🚨 最近触发</h2>
+                    <div class="space-y-3" id="triggered-alerts">
+                        <p class="text-gray-400 text-center py-4">暂无触发记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 趋势分析 Tab ==================== -->
+        <div id="content-analysis" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 主图表 -->
+                <div class="lg:col-span-2 glass rounded-xl p-6 border border-white/10">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold">📈 价格趋势分析</h2>
+                        <div class="flex gap-2">
+                            <select id="chart-symbol" class="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm">
+                                <option value="BTC">BTC</option>
+                                <option value="ETH">ETH</option>
+                                <option value="SOL">SOL</option>
+                            </select>
+                            <select id="chart-period" class="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm">
+                                <option value="24h">24小时</option>
+                                <option value="7d">7天</option>
+                                <option value="30d">30天</option>
+                            </select>
+                        </div>
+                    </div>
+                    <canvas id="trendChart" height="350"></canvas>
+                    
+                    <!-- 支撑/阻力位显示 -->
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                            <p class="text-xs text-green-400 mb-1">🟢 支撑位</p>
+                            <p class="text-sm" id="support-levels">--</p>
+                        </div>
+                        <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                            <p class="text-xs text-red-400 mb-1">🔴 阻力位</p>
+                            <p class="text-sm" id="resistance-levels">--</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 技术指标 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4">📊 技术指标</h2>
+                    
+                    <!-- RSI -->
+                    <div class="bg-white/5 rounded-lg p-4 mb-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">RSI (14)</span>
+                            <span id="rsi-value" class="font-bold">--</span>
+                        </div>
+                        <div class="mt-2 h-2 bg-gray-700 rounded-full overflow-hidden">
+                            <div id="rsi-bar" class="h-full bg-blue-500 transition-all" style="width: 50%"></div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1" id="rsi-signal">--</p>
+                    </div>
+                    
+                    <!-- MACD -->
+                    <div class="bg-white/5 rounded-lg p-4 mb-3">
+                        <p class="text-sm text-gray-400 mb-2">MACD</p>
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div>
+                                <p class="text-gray-500">MACD</p>
+                                <p id="macd-value" class="font-semibold">--</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Signal</p>
+                                <p id="macd-signal" class="font-semibold">--</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Histogram</p>
+                                <p id="macd-hist" class="font-semibold">--</p>
+                            </div>
+                        </div>
+                        <p class="text-xs mt-2" id="macd-trend">--</p>
+                    </div>
+                    
+                    <!-- 移动平均线 -->
+                    <div class="bg-white/5 rounded-lg p-4 mb-3">
+                        <p class="text-sm text-gray-400 mb-2">移动平均线</p>
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-yellow-400">MA7</span>
+                                <span id="ma7">--</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-blue-400">MA25</span>
+                                <span id="ma25">--</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-purple-400">MA99</span>
+                                <span id="ma99">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 多空信号 -->
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <p class="text-sm text-gray-400 mb-2">综合信号</p>
+                        <div class="text-center">
+                            <span id="overall-signal" class="text-2xl">--</span>
+                            <p id="signal-text" class="text-sm mt-1">--</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 交易所价格对比 -->
+                <div class="lg:col-span-3 glass rounded-xl p-6 border border-white/10">
+                    <h2 class="text-lg font-semibold mb-4">🏦 多交易所价格对比</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-white/10">
+                                    <th class="pb-2">币种</th>
+                                    <th class="pb-2">Binance</th>
+                                    <th class="pb-2">CoinGecko</th>
+                                    <th class="pb-2">均价</th>
+                                    <th class="pb-2">价差</th>
+                                    <th class="pb-2">24h涨跌</th>
+                                </tr>
+                            </thead>
+                            <tbody id="exchange-comparison" class="divide-y divide-white/5">
+                                <tr><td colspan="6" class="py-4 text-center text-gray-400">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加持仓 Modal -->
+    <div id="modal-addHolding" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="glass rounded-xl p-6 w-full max-w-md border border-white/20">
+            <h2 class="text-lg font-semibold mb-4">➕ 添加持仓</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">币种</label>
+                    <input type="text" id="holding-symbol" placeholder="BTC" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">数量</label>
+                    <input type="number" id="holding-amount" placeholder="0.00" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">平均成本价</label>
+                    <input type="number" id="holding-price" placeholder="$" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">交易所</label>
+                    <select id="holding-exchange" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white">
+                        <option value="Binance">Binance</option>
+                        <option value="CoinGecko">CoinGecko</option>
+                        <option value="OKX">OKX</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-4 mt-6">
+                <button onclick="closeModal('addHolding')" class="flex-1 py-2 bg-gray-600 rounded-lg hover:bg-gray-500 transition">取消</button>
+                <button onclick="addHolding()" class="flex-1 py-2 bg-green-600 rounded-lg hover:bg-green-500 transition">确认添加</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============== 全局状态 ==============
+        const API_BASE = '';
+        let prices = {};
+        let portfolio = null;
+        let paperTrading = null;
+        let alerts = null;
+        let charts = {};
+        let currentTab = 'dashboard';
+
+        // ============== 初始化 ==============
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshAllData();
+            
+            // 定时刷新
+            setInterval(refreshAllData, 60000);
+            setInterval(checkAlerts, 30000);
+        });
+
+        // ============== Tab 切换 ==============
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(el => {
+                el.classList.remove('tab-active');
+                el.classList.add('text-gray-400');
+            });
+            
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+            document.getElementById(`tab-${tabName}`).classList.remove('text-gray-400');
+            
+            currentTab = tabName;
+            
+            // 初始化图表
+            if (tabName === 'analysis') {
+                setTimeout(() => initAnalysisChart(), 100);
+            }
+        }
+
+        // ============== 数据刷新 ==============
+        async function refreshAllData() {
+            try {
+                // 获取价格数据
+                const pricesRes = await fetch(`${API_BASE}/api/prices/top`);
+                const pricesData = await pricesRes.json();
+                
+                if (Array.isArray(pricesData)) {
+                    pricesData.forEach(p => {
+                        prices[p.symbol] = p;
+                    });
+                }
+                
+                renderDashboard();
+                updateExchangeComparison();
+                
+                document.getElementById('last-update').textContent = `最后更新: ${new Date().toLocaleTimeString()}`;
+                
+                // 获取投资组合
+                try {
+                    const pfRes = await fetch(`${API_BASE}/api/portfolio`);
+                    portfolio = await pfRes.json();
+                    renderPortfolio();
+                } catch (e) {
+                    console.warn('投资组合加载失败:', e);
+                }
+                
+                // 获取模拟交易数据
+                try {
+                    const ptRes = await fetch(`${API_BASE}/api/paper-trading`);
+                    paperTrading = await ptRes.json();
+                    renderPaperTrading();
+                } catch (e) {
+                    console.warn('模拟交易加载失败:', e);
+                }
+                
+                // 获取提醒
+                try {
+                    const alertRes = await fetch(`${API_BASE}/api/alerts`);
+                    alerts = await alertRes.json();
+                    renderAlerts();
+                } catch (e) {
+                    console.warn('提醒加载失败:', e);
+                }
+                
+            } catch (error) {
+                console.error('刷新数据失败:', error);
+                useMockData();
+            }
+        }
+
+        // 使用模拟数据
+        function useMockData() {
+            const mockPrices = generateMockPrices();
+            Object.assign(prices, mockPrices);
+            renderDashboard();
+            renderPortfolio();
+            renderPaperTrading();
+            updateExchangeComparison();
+            renderAlerts();
+        }
+
+        function generateMockPrices() {
+            return {
+                'BTC': { symbol: 'BTC', price: 71130, change24h: 2.92, sources: ['Binance', 'CoinGecko'] },
+                'ETH': { symbol: 'ETH', price: 2110, change24h: 2.88, sources: ['Binance', 'CoinGecko'] },
+                'SOL': { symbol: 'SOL', price: 87.73, change24h: 13.63, sources: ['Binance', 'CoinGecko'] },
+                'BNB': { symbol: 'BNB', price: 643.45, change24h: 13.93, sources: ['Binance', 'CoinGecko'] },
+                'XRP': { symbol: 'XRP', price: 2.34, change24h: -3.45, sources: ['CoinGecko'] },
+                'ADA': { symbol: 'ADA', price: 0.98, change24h: -5.67, sources: ['CoinGecko'] },
+                'DOGE': { symbol: 'DOGE', price: 0.09721, change24h: 12.45, sources: ['Binance'] },
+            };
+        }
+
+        // ============== 仪表板渲染 ==============
+        function renderDashboard() {
+            // 更新BTC/ETH价格
+            const btc = prices['BTC'];
+            const eth = prices['ETH'];
+            
+            if (btc) {
+                document.getElementById('btc-price').textContent = formatPrice(btc.price);
+                document.getElementById('btc-change').textContent = `${btc.change24h >= 0 ? '+' : ''}${btc.change24h.toFixed(2)}%`;
+                document.getElementById('btc-change').className = `text-xs ${btc.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`;
+            }
+            
+            if (eth) {
+                document.getElementById('eth-price').textContent = formatPrice(eth.price);
+                document.getElementById('eth-change').textContent = `${eth.change24h >= 0 ? '+' : ''}${eth.change24h.toFixed(2)}%`;
+                document.getElementById('eth-change').className = `text-xs ${eth.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`;
+            }
+            
+            // 更新持仓价值
+            if (portfolio) {
+                document.getElementById('portfolio-value').textContent = formatPrice(portfolio.totalValue || 0);
+                const profit = portfolio.totalProfitPercent || 0;
+                document.getElementById('portfolio-profit').textContent = `${profit >= 0 ? '+' : ''}${profit.toFixed(2)}%`;
+                document.getElementById('portfolio-profit').className = `text-xs ${profit >= 0 ? 'text-green-400' : 'text-red-400'}`;
+            }
+            
+            // 更新模拟资金
+            if (paperTrading) {
+                document.getElementById('paper-balance').textContent = formatPrice(paperTrading.balance || 10000);
+            }
+            
+            // 更新涨幅榜/跌幅榜
+            const sortedCoins = Object.values(prices).sort((a, b) => b.change24h - a.change24h);
+            const gainers = sortedCoins.slice(0, 10);
+            const losers = sortedCoins.slice().reverse().slice(0, 10);
+            
+            renderGainers(gainers);
+            renderLosers(losers);
+            
+            // 更新图表
+            initDashboardCharts();
+        }
+
+        function renderGainers(coins) {
+            const tbody = document.getElementById('gainers-table');
+            tbody.innerHTML = coins.map((coin, i) => `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="py-2">${i + 1}</td>
+                    <td class="py-2 font-medium">${coin.symbol}</td>
+                    <td class="py-2">${formatPrice(coin.price)}</td>
+                    <td class="py-2 text-green-400">+${coin.change24h.toFixed(2)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderLosers(coins) {
+            const tbody = document.getElementById('losers-table');
+            tbody.innerHTML = coins.map((coin, i) => `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="py-2">${i + 1}</td>
+                    <td class="py-2 font-medium">${coin.symbol}</td>
+                    <td class="py-2">${formatPrice(coin.price)}</td>
+                    <td class="py-2 text-red-400">${coin.change24h.toFixed(2)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function initDashboardCharts() {
+            // 价格走势模拟图
+            const priceCtx = document.getElementById('priceChart');
+            if (priceCtx && !charts.price) {
+                charts.price = new Chart(priceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                        datasets: [
+                            {
+                                label: 'BTC',
+                                data: generateRandomData(24, 70000, 72000),
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'ETH',
+                                data: generateRandomData(24, 2000, 2200),
+                                borderColor: '#8b5cf6',
+                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: '#9ca3af' } } },
+                        scales: {
+                            x: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                            y: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                        }
+                    }
+                });
+            }
+            
+            // 市值饼图
+            const marketCtx = document.getElementById('marketChart');
+            if (marketCtx && !charts.market) {
+                charts.market = new Chart(marketCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['BTC', 'ETH', 'SOL', 'BNB', '其他'],
+                        datasets: [{
+                            data: [45, 25, 10, 8, 12],
+                            backgroundColor: ['#f59e0b', '#8b5cf6', '#22c55e', '#ef4444', '#6b7280']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'right', labels: { color: '#9ca3af' } } }
+                    }
+                });
+            }
+        }
+
+        // ============== 投资组合 ==============
+        function renderPortfolio() {
+            if (!portfolio || !portfolio.holdings) return;
+            
+            // 更新汇总
+            document.getElementById('pf-total-value').textContent = formatPrice(portfolio.totalValue);
+            document.getElementById('pf-total-cost').textContent = formatPrice(portfolio.totalCost);
+            const profit = portfolio.totalProfitPercent || 0;
+            document.getElementById('pf-total-profit').textContent = `${profit >= 0 ? '+' : ''}${profit.toFixed(2)}%`;
+            document.getElementById('pf-total-profit').className = profit >= 0 ? 'text-xl font-bold text-green-400' : 'text-xl font-bold text-red-400';
+            
+            // 渲染持仓
+            const tbody = document.getElementById('holdings-table');
+            if (portfolio.holdings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-gray-400">暂无持仓，点击右上角添加</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = portfolio.holdings.map((h, i) => `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="py-3 font-medium">${h.symbol}</td>
+                    <td class="py-3">${h.amount.toFixed(4)}</td>
+                    <td class="py-3">${formatPrice(h.avgPrice)}</td>
+                    <td class="py-3">${formatPrice(h.currentPrice)}</td>
+                    <td class="py-3 text-green-400">${formatPrice(h.value)}</td>
+                    <td class="py-3 ${h.profit >= 0 ? 'text-green-400' : 'text-red-400'}">
+                        ${h.profit >= 0 ? '+' : ''}${h.profitPercent.toFixed(2)}%
+                    </td>
+                    <td class="py-3">
+                        <button onclick="sellHolding('${h.symbol}', ${h.amount})" class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded hover:bg-red-500/30">
+                            卖出
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // 渲染交易历史
+            const historyContainer = document.getElementById('pf-history');
+            if (portfolio.transactions && portfolio.transactions.length > 0) {
+                historyContainer.innerHTML = portfolio.transactions.slice(0, 20).reverse().map(t => `
+                    <div class="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <span class="${t.type === 'BUY' ? 'text-green-400' : 'text-red-400'}">${t.type === 'BUY' ? '🟢' : '🔴'}</span>
+                            <span class="font-medium">${t.symbol}</span>
+                            <span class="text-xs text-gray-400">${t.type}</span>
+                        </div>
+                        <div class="text-right text-xs">
+                            <p>${formatPrice(t.total)}</p>
+                            <p class="text-gray-400">${new Date(t.timestamp).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function openModal(modalName) {
+            document.getElementById(`modal-${modalName}`).classList.remove('hidden');
+        }
+        
+        function closeModal(modalName) {
+            document.getElementById(`modal-${modalName}`).classList.add('hidden');
+        }
+        
+        function addHolding() {
+            const symbol = document.getElementById('holding-symbol').value.toUpperCase();
+            const amount = parseFloat(document.getElementById('holding-amount').value);
+            const price = parseFloat(document.getElementById('holding-price').value);
+            const exchange = document.getElementById('holding-exchange').value;
+            
+            if (!symbol || !amount || !price) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            // 保存到本地存储
+            const holdings = JSON.parse(localStorage.getItem('crypto_holdings') || '[]');
+            const existing = holdings.find(h => h.symbol === symbol);
+            if (existing) {
+                const totalCost = existing.amount * existing.avgPrice + amount * price;
+                existing.amount += amount;
+                existing.avgPrice = totalCost / existing.amount;
+            } else {
+                holdings.push({ symbol, amount, avgPrice: price, exchange, currentPrice: price });
+            }
+            localStorage.setItem('crypto_holdings', JSON.stringify(holdings));
+            
+            closeModal('addHolding');
+            loadPortfolioFromStorage();
+            showNotification('✅ 持仓添加成功');
+        }
+        
+        function loadPortfolioFromStorage() {
+            const holdings = JSON.parse(localStorage.getItem('crypto_holdings') || '[]');
+            let totalValue = 0, totalCost = 0;
+            
+            const enrichedHoldings = holdings.map(h => {
+                const price = prices[h.symbol]?.price || h.currentPrice;
+                const value = h.amount * price;
+                const cost = h.amount * h.avgPrice;
+                totalValue += value;
+                totalCost += cost;
+                return { ...h, currentPrice: price, value, profit: value - cost, profitPercent: cost > 0 ? ((value - cost) / cost) * 100 : 0 };
+            });
+            
+            portfolio = {
+                holdings: enrichedHoldings,
+                totalValue,
+                totalCost,
+                totalProfit: totalValue - totalCost,
+                totalProfitPercent: totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0,
+                transactions: []
+            };
+            
+            renderPortfolio();
+        }
+
+        // ============== 模拟交易 ==============
+        function renderPaperTrading() {
+            if (!paperTrading) {
+                paperTrading = { balance: 10000, stats: { totalProfit: 0, totalTrades: 0, winRate: 0 }, positions: [], trades: [] };
+            }
+            
+            document.getElementById('pt-balance').textContent = formatPrice(paperTrading.balance);
+            document.getElementById('pt-profit').textContent = `${paperTrading.stats.totalProfit >= 0 ? '+' : ''}${formatPrice(paperTrading.stats.totalProfit)}`;
+            document.getElementById('pt-profit').className = paperTrading.stats.totalProfit >= 0 ? 'text-xl font-bold text-green-400' : 'text-xl font-bold text-red-400';
+            document.getElementById('pt-trades').textContent = paperTrading.stats.totalTrades || 0;
+            document.getElementById('pt-winrate').textContent = `${(paperTrading.stats.winRate || 0).toFixed(1)}%`;
+            
+            // 渲染持仓
+            const positionsContainer = document.getElementById('pt-positions');
+            if (paperTrading.positions && paperTrading.positions.length > 0) {
+                positionsContainer.innerHTML = paperTrading.positions.map(p => `
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-purple-500/30">
+                        <div>
+                            <p class="font-medium">${p.symbol}</p>
+                            <p class="text-xs text-gray-400">数量: ${p.amount.toFixed(4)} | 均价: ${formatPrice(p.avgPrice)}</p>
+                        </div>
+                        <button onclick="closePosition('${p.symbol}')" class="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded">平仓</button>
+                    </div>
+                `).join('');
+            } else {
+                positionsContainer.innerHTML = '<p class="text-gray-400 text-center py-4">暂无持仓，开始交易吧！</p>';
+            }
+            
+            // 渲染交易历史
+            const historyContainer = document.getElementById('pt-history');
+            if (paperTrading.trades && paperTrading.trades.length > 0) {
+                historyContainer.innerHTML = paperTrading.trades.slice().reverse().slice(0, 30).map(t => `
+                    <div class="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <span class="${t.type === 'BUY' ? 'text-green-400' : 'text-red-400'}">${t.type === 'BUY' ? '🟢' : '🔴'}</span>
+                            <span class="font-medium">${t.symbol}</span>
+                            <span class="text-xs ${t.type === 'BUY' ? 'text-green-400' : 'text-red-400'}">${t.type}</span>
+                        </div>
+                        <div class="text-right text-xs">
+                            <p>${t.amount.toFixed(4)} @ ${formatPrice(t.price)}</p>
+                            <p class="text-gray-400">${formatPrice(t.total)}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function executeTrade(action) {
+            const symbol = document.getElementById('trade-symbol').value;
+            const amount = parseFloat(document.getElementById('trade-amount').value);
+            let price = parseFloat(document.getElementById('trade-price').value);
+            
+            if (!amount || amount <= 0) {
+                showNotification('请输入有效数量', 'warning');
+                return;
+            }
+            
+            // 使用当前市场价格
+            if (!price || document.getElementById('trade-type').value === 'market') {
+                price = prices[symbol]?.price || generateMockPrice(symbol);
+            }
+            
+            const total = amount * price;
+            
+            if (action === 'buy') {
+                if (total > (paperTrading?.balance || 10000)) {
+                    showNotification('余额不足', 'error');
+                    return;
+                }
+                if (!paperTrading.positions) paperTrading.positions = [];
+                if (!paperTrading.trades) paperTrading.trades = [];
+                
+                const existing = paperTrading.positions.find(p => p.symbol === symbol);
+                if (existing) {
+                    existing.amount += amount;
+                    existing.avgPrice = (existing.amount * existing.avgPrice + total) / existing.amount;
+                } else {
+                    paperTrading.positions.push({ symbol, amount, avgPrice: price });
+                }
+                paperTrading.balance -= total;
+                paperTrading.trades.push({ type: 'BUY', symbol, amount, price, total, timestamp: new Date() });
+            } else {
+                const position = paperTrading.positions?.find(p => p.symbol === symbol);
+                if (!position || position.amount < amount) {
+                    showNotification('持仓不足', 'error');
+                    return;
+                }
+                position.amount -= amount;
+                if (position.amount <= 0) {
+                    paperTrading.positions = paperTrading.positions.filter(p => p.symbol !== symbol);
+                }
+                paperTrading.balance += total;
+                paperTrading.trades.push({ type: 'SELL', symbol, amount, price, total, timestamp: new Date() });
+            }
+            
+            // 更新统计
+            if (!paperTrading.stats) paperTrading.stats = { totalTrades: 0, winningTrades: 0, totalProfit: 0, winRate: 0 };
+            paperTrading.stats.totalTrades = paperTrading.trades.length;
+            paperTrading.stats.totalProfit = paperTrading.balance - 10000;
+            
+            renderPaperTrading();
+            showNotification(`${action === 'buy' ? '🟢 买入' : '🔴 卖出'} ${symbol} ${amount} @ ${formatPrice(price)}`);
+            
+            // 保存到本地
+            localStorage.setItem('crypto_paper_trading', JSON.stringify(paperTrading));
+        }
+        
+        function resetPaperTrading() {
+            if (confirm('确定重置模拟交易账户？所有数据将被清除。')) {
+                paperTrading = { balance: 10000, positions: [], trades: [], stats: { totalTrades: 0, winningTrades: 0, totalProfit: 0, winRate: 0 } };
+                localStorage.removeItem('crypto_paper_trading');
+                renderPaperTrading();
+                showNotification('🔄 模拟交易已重置');
+            }
+        }
+        
+        function loadPaperTradingFromStorage() {
+            const saved = localStorage.getItem('crypto_paper_trading');
+            if (saved) {
+                paperTrading = JSON.parse(saved);
+            } else {
+                paperTrading = { balance: 10000, positions: [], trades: [], stats: { totalTrades: 0, winningTrades: 0, totalProfit: 0, winRate: 0 } };
+            }
+            renderPaperTrading();
+        }
+        
+        function generateMockPrice(symbol) {
+            const mock = { 'BTC': 71130, 'ETH': 2110, 'SOL': 87.73, 'BNB': 643.45 };
+            return mock[symbol] || 100;
+        }
+
+        // ============== 智能提醒 ==============
+        function renderAlerts() {
+            if (!alerts) alerts = { priceAlerts: [], supportResistance: [] };
+            
+            // 价格提醒
+            const priceList = document.getElementById('price-alerts-list');
+            if (alerts.priceAlerts && alerts.priceAlerts.length > 0) {
+                priceList.innerHTML = alerts.priceAlerts.map((a, i) => `
+                    <div class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border ${a.triggered ? 'border-green-500' : 'border-purple-500'}">
+                        <span>${a.direction === 'above' ? '🚀' : '📉'}</span>
+                        <span class="font-medium">${a.symbol}</span>
+                        <span class="text-sm text-gray-400">$</span>
+                        <span class="text-sm">${a.targetPrice}</span>
+                        <span class="text-xs ${a.triggered ? 'text-green-400' : 'text-gray-500'}">${a.triggered ? '✓' : ''}</span>
+                        <button onclick="deleteAlert('price', ${i})" class="text-red-400 ml-1">×</button>
+                    </div>
+                `).join('');
+            } else {
+                priceList.innerHTML = '<p class="text-gray-400 text-sm">暂无价格提醒</p>';
+            }
+            
+            // 支撑/阻力位
+            const srList = document.getElementById('sr-alerts-list');
+            if (alerts.supportResistance && alerts.supportResistance.length > 0) {
+                srList.innerHTML = alerts.supportResistance.map((a, i) => `
+                    <div class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-yellow-500/50">
+                        <span>${a.type === 'support' ? '🟢' : a.type === 'resistance' ? '🔴' : '📊'}</span>
+                        <span class="font-medium">${a.symbol}</span>
+                        <span class="text-xs text-gray-400">${a.levels.join(', ')}</span>
+                        <button onclick="deleteAlert('sr', ${i})" class="text-red-400 ml-1">×</button>
+                    </div>
+                `).join('');
+            } else {
+                srList.innerHTML = '<p class="text-gray-400 text-sm">暂无支撑/阻力位设置</p>';
+            }
+            
+            // 活跃提醒数
+            document.getElementById('active-alerts').textContent = (alerts.priceAlerts?.length || 0) + (alerts.supportResistance?.length || 0);
+        }
+        
+        function addPriceAlert() {
+            const symbol = document.getElementById('alert-symbol').value.toUpperCase();
+            const price = parseFloat(document.getElementById('alert-price').value);
+            const direction = document.getElementById('alert-direction').value;
+            
+            if (!symbol || !price) {
+                showNotification('请填写完整信息', 'warning');
+                return;
+            }
+            
+            if (!alerts.priceAlerts) alerts.priceAlerts = [];
+            alerts.priceAlerts.push({
+                id: Date.now(),
+                symbol,
+                targetPrice: price,
+                direction,
+                triggered: false
+            });
+            
+            saveAlertsToStorage();
+            renderAlerts();
+            showNotification(`✅ 已添加 ${symbol} 价格提醒`);
+            
+            document.getElementById('alert-symbol').value = '';
+            document.getElementById('alert-price').value = '';
+        }
+        
+        function addSRAlert() {
+            const symbol = document.getElementById('sr-symbol').value.toUpperCase();
+            const level = parseFloat(document.getElementById('sr-level').value);
+            const type = document.getElementById('sr-type').value;
+            
+            if (!symbol || !level) {
+                showNotification('请填写完整信息', 'warning');
+                return;
+            }
+            
+            if (!alerts.supportResistance) alerts.supportResistance = [];
+            alerts.supportResistance.push({
+                id: Date.now(),
+                symbol,
+                levels: [level],
+                type
+            });
+            
+            saveAlertsToStorage();
+            renderAlerts();
+            showNotification(`✅ 已添加 ${symbol} 支撑/阻力位提醒`);
+        }
+        
+        function addMultiSR() {
+            const symbol = document.getElementById('sr-multi-symbol').value.toUpperCase();
+            const levelsStr = document.getElementById('sr-multi-levels').value;
+            const levels = levelsStr.split(',').map(l => parseFloat(l.trim())).filter(l => !isNaN(l));
+            
+            if (!symbol || levels.length === 0) {
+                showNotification('请填写币种和价格位', 'warning');
+                return;
+            }
+            
+            if (!alerts.supportResistance) alerts.supportResistance = [];
+            alerts.supportResistance.push({
+                id: Date.now(),
+                symbol,
+                levels,
+                type: 'both'
+            });
+            
+            saveAlertsToStorage();
+            renderAlerts();
+            showNotification(`✅ 已添加 ${symbol} 批量支撑/阻力位`);
+        }
+        
+        function deleteAlert(type, index) {
+            if (type === 'price') {
+                alerts.priceAlerts.splice(index, 1);
+            } else {
+                alerts.supportResistance.splice(index, 1);
+            }
+            saveAlertsToStorage();
+            renderAlerts();
+        }
+        
+        function resetAlerts() {
+            if (alerts.priceAlerts) {
+                alerts.priceAlerts.forEach(a => a.triggered = false);
+            }
+            saveAlertsToStorage();
+            renderAlerts();
+            showNotification('✅ 已重置提醒状态');
+        }
+        
+        function checkAlerts() {
+            if (!alerts || !alerts.priceAlerts) return;
+            
+            alerts.priceAlerts.forEach(alert => {
+                if (alert.triggered) return;
+                
+                const currentPrice = prices[alert.symbol]?.price;
+                if (!currentPrice) return;
+                
+                if (alert.direction === 'above' && currentPrice >= alert.targetPrice) {
+                    alert.triggered = true;
+                    showNotification(`🚨 ${alert.symbol} 价格突破 $${alert.targetPrice}! 当前: ${formatPrice(currentPrice)}`, 'error');
+                } else if (alert.direction === 'below' && currentPrice <= alert.targetPrice) {
+                    alert.triggered = true;
+                    showNotification(`🚨 ${alert.symbol} 价格跌破 $${alert.targetPrice}! 当前: ${formatPrice(currentPrice)}`, 'error');
+                }
+            });
+            
+            saveAlertsToStorage();
+            renderAlerts();
+        }
+        
+        function saveAlertsToStorage() {
+            localStorage.setItem('crypto_alerts', JSON.stringify(alerts));
+        }
+        
+        function loadAlertsFromStorage() {
+            const saved = localStorage.getItem('crypto_alerts');
+            if (saved) {
+                alerts = JSON.parse(saved);
+            } else {
+                alerts = { priceAlerts: [], supportResistance: [] };
+            }
+            renderAlerts();
+        }
+
+        // ============== 趋势分析 ==============
+        function initAnalysisChart() {
+            const ctx = document.getElementById('trendChart');
+            if (!ctx) return;
+            
+            if (charts.trend) charts.trend.destroy();
+            
+            const symbol = document.getElementById('chart-symbol').value;
+            const period = document.getElementById('chart-period').value;
+            
+            const dataPoints = period === '24h' ? 24 : period === '7d' ? 7 * 24 : 30;
+            const basePrice = prices[symbol]?.price || generateMockPrice(symbol);
+            
+            const data = [];
+            const labels = [];
+            for (let i = dataPoints; i >= 0; i--) {
+                data.push(basePrice * (1 + (Math.random() - 0.5) * 0.1));
+                if (period === '24h') {
+                    labels.push(`${i}:00`);
+                } else {
+                    labels.push(`D-${i}`);
+                }
+            }
+            
+            charts.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: `${symbol}/USDT`,
+                        data,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: '#9ca3af' } },
+                        title: { display: true, text: `${symbol} 价格趋势`, color: '#fff' }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+            
+            // 更新技术指标
+            updateTechnicalIndicators(basePrice);
+            
+            // 更新支撑/阻力位
+            const supportLevels = [basePrice * 0.95, basePrice * 0.9, basePrice * 0.85];
+            const resistanceLevels = [basePrice * 1.05, basePrice * 1.1, basePrice * 1.15];
+            
+            document.getElementById('support-levels').textContent = supportLevels.map(p => formatPrice(p)).join(', ');
+            document.getElementById('resistance-levels').textContent = resistanceLevels.map(p => formatPrice(p)).join(', ');
+        }
+        
+        function updateTechnicalIndicators(price) {
+            // RSI
+            const rsi = 50 + (Math.random() - 0.5) * 60;
+            document.getElementById('rsi-value').textContent = rsi.toFixed(1);
+            document.getElementById('rsi-bar').style.width = `${rsi}%`;
+            document.getElementById('rsi-bar').className = `h-full transition-all ${rsi > 70 ? 'bg-red-500' : rsi < 30 ? 'bg-green-500' : 'bg-blue-500'}`;
+            document.getElementById('rsi-signal').textContent = rsi > 70 ? '⚠️ 超买' : rsi < 30 ? '⚠️ 超卖' : '📊 中性';
+            
+            // MACD
+            const macd = (Math.random() - 0.5) * 100;
+            const signal = (Math.random() - 0.5) * 100;
+            const hist = macd - signal;
+            
+            document.getElementById('macd-value').textContent = macd.toFixed(2);
+            document.getElementById('macd-signal').textContent = signal.toFixed(2);
+            document.getElementById('macd-hist').textContent = hist.toFixed(2);
+            document.getElementById('macd-hist').className = `font-semibold ${hist >= 0 ? 'text-green-400' : 'text-red-400'}`;
+            document.getElementById('macd-trend').textContent = hist >= 0 ? '📈 上涨趋势' : '📉 下跌趋势';
+            
+            // MA
+            document.getElementById('ma7').textContent = formatPrice(price * (1 + Math.random() * 0.02));
+            document.getElementById('ma25').textContent = formatPrice(price * (1 + Math.random() * 0.03));
+            document.getElementById('ma99').textContent = formatPrice(price * (1 + Math.random() * 0.05));
+            
+            // 综合信号
+            const signals = [];
+            if (rsi > 70) signals.push('🔴');
+            else if (rsi < 30) signals.push('🟢');
+            
+            if (hist > 0) signals.push('📈');
+            else signals.push('📉');
+            
+            const avgMA7 = price * 1.01, avgMA25 = price * 0.99;
+            if (price > avgMA7) signals.push('🟢');
+            else if (price < avgMA7) signals.push('🔴');
+            
+            const buySignals = signals.filter(s => s === '🟢' || s === '📈').length;
+            const sellSignals = signals.filter(s => s === '🔴' || s === '📉').length;
+            
+            document.getElementById('overall-signal').textContent = buySignals > sellSignals ? '🟢' : sellSignals > buySignals ? '🔴' : '⚪';
+            document.getElementById('signal-text').textContent = buySignals > sellSignals ? '买入信号' : sellSignals > buySignals ? '卖出信号' : '观望';
+        }
+
+        // ============== 交易所对比 ==============
+        function updateExchangeComparison() {
+            const tbody = document.getElementById('exchange-comparison');
+            const coins = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP'];
+            
+            tbody.innerHTML = coins.map(symbol => {
+                const coin = prices[symbol] || { price: generateMockPrice(symbol), change24h: 0 };
+                const binancePrice = coin.price * (1 + (Math.random() - 0.5) * 0.002);
+                const coingeckoPrice = coin.price * (1 + (Math.random() - 0.5) * 0.002);
+                const avgPrice = (binancePrice + coingeckoPrice) / 2;
+                const spread = Math.abs(binancePrice - coingeckoPrice);
+                const spreadPercent = (spread / avgPrice * 100).toFixed(3);
+                
+                return `
+                    <tr class="border-b border-white/5 hover:bg-white/5">
+                        <td class="py-3 font-medium">${symbol}</td>
+                        <td class="py-3 text-green-400">${formatPrice(binancePrice)}</td>
+                        <td class="py-3 text-blue-400">${formatPrice(coingeckoPrice)}</td>
+                        <td class="py-3">${formatPrice(avgPrice)}</td>
+                        <td class="py-3 ${spreadPercent < 0.1 ? 'text-green-400' : 'text-yellow-400'}">${spreadPercent}%</td>
+                        <td class="py-3 ${coin.change24h >= 0 ? 'text-green-400' : 'text-red-400'}">
+                            ${coin.change24h >= 0 ? '+' : ''}${coin.change24h.toFixed(2)}%
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============== 工具函数 ==============
+        function formatPrice(price) {
+            if (!price) return '$0.00';
+            if (price >= 1) {
+                return '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else if (price >= 0.001) {
+                return '$' + price.toFixed(4);
+            } else {
+                return '$' + price.toFixed(8);
+            }
+        }
+        
+        function generateRandomData(count, min, max) {
+            const data = [];
+            let current = (min + max) / 2;
+            for (let i = 0; i < count; i++) {
+                current += (Math.random() - 0.5) * (max - min) * 0.2;
+                current = Math.max(min, Math.min(max, current));
+                data.push(current);
+            }
+            return data;
+        }
+        
+        function showNotification(message, type = 'info') {
+            const container = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-red-600' : type === 'warning' ? 'bg-yellow-600' : 'bg-purple-600';
+            container.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 text-white ${bgColor} animate-pulse`;
+            container.textContent = message;
+            document.body.appendChild(container);
+            setTimeout(() => container.remove(), 3000);
+        }
+
+        // ============== 页面初始化 ==============
+        async function init() {
+            try {
+                await refreshAllData();
+            } catch (e) {
+                console.warn('API不可用，使用本地数据');
+                useMockData();
+            }
+            loadPortfolioFromStorage();
+            loadPaperTradingFromStorage();
+            loadAlertsFromStorage();
+        }
+        
+        init();
+    </script>
+</body>
+</html>

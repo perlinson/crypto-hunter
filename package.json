@@ -1,22 +1,26 @@
 {
-  "name": "crypto-hunter",
-  "version": "1.0.0",
-  "description": "加密货币异动监控器 - 自动监控涨幅榜、交易量突增、新币上市",
-  "main": "index.js",
+  "name": "crypto-hunter-pro",
+  "version": "2.0.0",
+  "description": "Crypto Hunter Pro - 高级加密货币交易平台，支持投资组合追踪、模拟交易、多交易所聚合",
+  "main": "index.pro.js",
   "scripts": {
-    "start": "node index.js",
-    "monitor": "while true; do node index.js; sleep 3600; done",
-    "test": "node test.js"
+    "start": "node index.pro.js",
+    "dev": "npx http-server -p 8080 -c-1 .",
+    "dashboard": "npx http-server -p 8080 -c-1 . --cors",
+    "monitor": "while true; do node index.js; sleep 3600; done"
   },
   "keywords": [
     "crypto",
     "trading",
-    "monitor",
-    "alert",
+    "portfolio",
+    "paper-trading",
+    "alerts",
+    "analysis",
     "bitcoin",
-    "ethereum"
+    "ethereum",
+    "binance"
   ],
-  "author": "Clawdbot",
+  "author": "Crypto Hunter",
   "license": "MIT",
   "dependencies": {}
 }
