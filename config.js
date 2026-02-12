@@ -102,4 +102,82 @@ module.exports = {
         aiAnalysis: false,
         openaiKey: '',
     },
+    
+    // ========================================
+    // v2.1 技术分析配置
+    // ========================================
+    technicalAnalysis: {
+        // 是否启用技术分析
+        enabled: process.env.TECHNICAL_ANALYSIS !== 'false',
+        
+        // RSI 配置
+        rsi: {
+            period: parseInt(process.env.RSI_PERIOD) || 14,
+            overbought: parseInt(process.env.RSI_OVERBROUGHT) || 70,
+            oversold: parseInt(process.env.RSI_OVERSOLD) || 30,
+        },
+        
+        // MACD 配置
+        macd: {
+            fastPeriod: parseInt(process.env.MACD_FAST_PERIOD) || 12,
+            slowPeriod: parseInt(process.env.MACD_SLOW_PERIOD) || 26,
+            signalPeriod: parseInt(process.env.MACD_SIGNAL_PERIOD) || 9,
+        },
+        
+        // 布林带配置
+        bollinger: {
+            period: parseInt(process.env.BOLLINGER_PERIOD) || 20,
+            stdDev: parseFloat(process.env.BOLLINGER_STDDEV) || 2,
+        },
+    },
+    
+    // ========================================
+    // v2.1 机器学习预测配置
+    // ========================================
+    mlPrediction: {
+        // 是否启用机器学习预测
+        enabled: process.env.ML_PREDICTION !== 'false',
+        
+        // 预测时间范围（小时）
+        predictionHorizon: parseInt(process.env.PREDICTION_HORIZON) || 24,
+        
+        // 最小训练数据点
+        minDataPoints: parseInt(process.env.MIN_DATA_POINTS) || 24,
+        
+        // 趋势阈值（百分比）
+        trendThreshold: parseFloat(process.env.TREND_THRESHOLD) || 2.0,
+        
+        // 置信区间百分比
+        confidenceInterval: 0.95,
+        
+        // 预测结果缓存时间（秒）
+        cacheTime: 300,
+    },
+
+    // ========================================
+    // v2.2 DeFi协议监控配置
+    // ========================================
+    defiMonitor: {
+        // 是否启用DeFi监控
+        enabled: process.env.DEFI_MONITOR !== 'false',
+
+        // 检查间隔（毫秒）
+        checkInterval: parseInt(process.env.DEFI_CHECK_INTERVAL) || 300000,
+
+        // TVL变化阈值（%）
+        tvlThreshold: parseFloat(process.env.DEFI_TVL_THRESHOLD) || 5,
+
+        // APY异常阈值（%）
+        apyThreshold: parseFloat(process.env.DEFI_APY_THRESHOLD) || 20,
+
+        // 启用的协议
+        protocols: ['aave', 'compound', 'uniswap', 'curve'],
+
+        // 通知配置
+        notifications: {
+            telegram: true,
+            feishu: true,
+            dingtalk: true,
+        },
+    },
 };

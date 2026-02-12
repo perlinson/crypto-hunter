@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐋 链上数据监控 - Crypto Hunter v3.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid #2a2a4a;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #888;
+            font-size: 1.1em;
+        }
+        
+        .update-time {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        /* 网格布局 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: linear-gradient(145deg, #1a1a2e, #16162a);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #2a2a4a;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2a2a4a;
+        }
+        
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+        
+        .badge-green {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+        
+        .badge-yellow {
+            background: rgba(255, 200, 0, 0.2);
+            color: #ffc800;
+        }
+        
+        .badge-red {
+            background: rgba(255, 80, 80, 0.2);
+            color: #ff5050;
+        }
+        
+        /* 市场评分 */
+        .score-container {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .score-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: conic-gradient(#00d4ff var(--score), #2a2a4a var(--score));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #1a1a2e, #16162a);
+        }
+        
+        .score-value {
+            position: relative;
+            font-size: 3em;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .score-label {
+            color: #888;
+            font-size: 1.1em;
+        }
+        
+        /* 交易所卡片 */
+        .exchange-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .exchange-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: background 0.3s ease;
+        }
+        
+        .exchange-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        
+        .exchange-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .exchange-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .flow-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+        
+        .flow-label {
+            color: #888;
+            font-size: 0.85em;
+        }
+        
+        .flow-value {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        
+        .flow-positive {
+            color: #00ff88;
+        }
+        
+        .flow-negative {
+            color: #ff5050;
+        }
+        
+        /* 巨鲸交易 */
+        .whale-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .whale-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s ease;
+        }
+        
+        .whale-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        
+        .whale-amount {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #00d4ff;
+        }
+        
+        .whale-type {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .type-deposit {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+        
+        .type-withdrawal {
+            background: rgba(255, 80, 80, 0.2);
+            color: #ff5050;
+        }
+        
+        .whale-direction {
+            font-size: 1.5em;
+        }
+        
+        /* 稳定币 */
+        .stablecoin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .stablecoin-item {
+            text-align: center;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            transition: transform 0.3s ease;
+       stablecoin-item:hover }
+        
+        . {
+            transform: scale(1.05);
+        }
+        
+        .stablecoin-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        
+        .stablecoin-symbol {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .stablecoin-volume {
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+        
+        .stablecoin-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        /* 预警面板 */
+        .alerts-panel {
+            background: linear-gradient(145deg, #1a1a2e, #16162a);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #2a2a4a;
+            margin-bottom: 30px;
+        }
+        
+        .alerts-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+        
+        .alert-urgent {
+            border-color: #ff5050;
+            background: rgba(255, 80, 80, 0.1);
+        }
+        
+        .alert-warning {
+            border-color: #ffc800;
+            background: rgba(255, 200, 0, 0.1);
+        }
+        
+        .alert-icon {
+            font-size: 1.5em;
+        }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-message {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .alert-time {
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        /* 控制面板 */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 30px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid #2a2a4a;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 实时数据指示器 */
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #00ff88;
+            font-size: 0.9em;
+        }
+        
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .exchange-grid, .stablecoin-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a4a;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a3a5a;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        /* 统计指标 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-item {
+            background: linear-gradient(145deg, #1a1a2e, #16162a);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #2a2a4a;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐋 链上数据监控</h1>
+            <p class="subtitle">Crypto Hunter v3.0 - 交易所资金流向 · 稳定币流动性 · 巨鲸追踪</p>
+            <p class="update-time">
+                <span class="live-indicator">
+                    <span class="live-dot"></span>
+                    实时数据
+                </span>
+                | 最后更新: <span id="lastUpdate">--</span>
+            </p>
+        </header>
+        
+        <!-- 市场活动评分 -->
+        <div class="card" style="margin-bottom: 30px;">
+            <div class="score-container">
+                <div class="score-circle" id="scoreCircle" style="--score: 50%;">
+                    <span class="score-value" id="scoreValue">50</span>
+                </div>
+                <p class="score-label">市场活动综合评分</p>
+                <p style="color: #888; margin-top: 10px; font-size: 0.9em;">
+                    评分基于交易所资金流向、巨鲸交易活跃度和稳定币交易量
+                </p>
+            </div>
+        </div>
+        
+        <!-- 统计指标 -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="totalExchangeFlow">0</div>
+                <div class="stat-label">交易所净流入 (BTC)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="whaleCount">0</div>
+                <div class="stat-label">巨鲸交易笔数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalStableVolume">$0</div>
+                <div class="stat-label">稳定币24h交易量</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="alertCount">0</div>
+                <div class="stat-label">活跃预警</div>
+            </div>
+        </div>
+        
+        <!-- 预警面板 -->
+        <div class="alerts-panel" id="alertsPanel">
+            <h2 class="alerts-title">🚨 实时预警</h2>
+            <div id="alertsList">
+                <p style="color: #888; text-align: center; padding: 20px;">
+                    暂无异常预警
+                </p>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- 交易所资金流向 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🏦 交易所资金流向</h2>
+                    <span class="card-badge badge-green">BTC</span>
+                </div>
+                <div class="exchange-grid">
+                    <div class="exchange-item">
+                        <div class="exchange-name">Binance</div>
+                        <div class="exchange-flow">
+                            <div class="flow-item">
+                                <span class="flow-label">净流入</span>
+                                <span class="flow-value" id="binanceNet">0</span>
+                            </div>
+                            <div class="flow-item">
+                                <span class="flow-label">流入</span>
+                                <span class="flow-value flow-positive" id="binanceInflow">0</span>
+                            </div>
+                            <div class="flow-item">
+                                <span class="flow-label">流出</span>
+                                <span class="flow-value flow-negative" id="binanceOutflow">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="exchange-item">
+                        <div class="exchange-name">Coinbase</div>
+                        <div class="exchange-flow">
+                            <div class="flow-item">
+                                <span class="flow-label">净流入</span>
+                                <span class="flow-value" id="coinbaseNet">0</span>
+                            </div>
+                            <div class="flow-item">
+                                <span class="flow-label">流入</span>
+                                <span class="flow-value flow-positive" id="coinbaseInflow">0</span>
+                            </div>
+                            <div class="flow-item">
+                                <span class="flow-label">流出</span>
+                                <span class="flow-value flow-negative" id="coinbaseOutflow">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="exchange-item">
+                        <div class="exchange-name">Kraken</div>
+                        <div class="exchange-flow">
+                            <div class="flow-item">
+                                <span class="flow-label">净流入</span>
+                                <span class="flow-value" id="krakenNet">0</span>
+                            </div>
+                            <div class="flow-item">
+                                <span class="flow-label">流入</span>
+                                <span class="flow-value flow-positive" id="krakenInflow">0</span>
+                            </div>
+                            <div class="flow-item">
+                                <span class="flow-label">流出</span>
+                                <span class="flow-value flow-negative" id="krakenOutflow">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 稳定币流动性 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💵 稳定币流动性</h2>
+                    <span class="card-badge badge-yellow">24h Volume</span>
+                </div>
+                <div class="stablecoin-grid">
+                    <div class="stablecoin-item">
+                        <div class="stablecoin-icon">₮</div>
+                        <div class="stablecoin-symbol">USDT</div>
+                        <div class="stablecoin-volume" id="usdtVolume">$0</div>
+                        <div class="stablecoin-label">24h 交易量</div>
+                    </div>
+                    <div class="stablecoin-item">
+                        <div class="stablecoin-icon">$</div>
+                        <div class="stablecoin-symbol">USDC</div>
+                        <div class="stablecoin-volume" id="usdcVolume">$0</div>
+                        <div class="stablecoin-label">24h 交易量</div>
+                    </div>
+                    <div class="stablecoin-item">
+                        <div class="stablecoin-icon">◈</div>
+                        <div class="stablecoin-symbol">DAI</div>
+                        <div class="stablecoin-volume" id="daiVolume">$0</div>
+                        <div class="stablecoin-label">24h 交易量</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 巨鲸交易追踪 -->
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2 class="card-title">🐋 巨鲸交易追踪</h2>
+                    <span class="card-badge badge-yellow">Live</span>
+                </div>
+                <div class="whale-list" id="whaleList">
+                    <p style="color: #888; text-align: center; padding: 40px;">
+                        正在加载巨鲸交易数据...
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <button class="btn btn-primary" onclick="refreshData()">
+                🔄 刷新数据
+            </button>
+            <button class="btn btn-secondary" onclick="startAutoRefresh()">
+                ▶️ 开始自动刷新
+            </button>
+            <button class="btn btn-secondary" onclick="stopAutoRefresh()">
+                ⏸️ 停止自动刷新
+            </button>
+        </div>
+        
+        <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #2a2a4a; color: #666;">
+            <p>🐋 Crypto Hunter v3.0 | 数据来源: 链上分析</p>
+            <p style="margin-top: 10px; font-size: 0.85em;">
+                ⚠️ 本数据仅供参考，不构成投资建议
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        // 全局变量
+        let autoRefreshInterval = null;
+        let currentData = null;
+        
+        // 格式化数字
+        function formatNumber(num) {
+            if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+            return num.toFixed(2);
+        }
+        
+        // 格式化金额
+        function formatCurrency(num) {
+            if (num >= 1000000000000) return '$' + (num / 1000000000000).toFixed(2) + 'T';
+            if (num >= 1000000000) return '$' + (num / 1000000000).toFixed(2) + 'B';
+            if (num >= 1000000) return '$' + (num / 1000000).toFixed(2) + 'M';
+            return '$' + formatNumber(num);
+        }
+        
+        // 获取随机数据（模拟链上数据）
+        function getMockData() {
+            const exchanges = ['binance', 'coinbase', 'kraken'];
+            const data = {
+                lastUpdate: new Date(),
+                exchangeFlows: {},
+                whaleTransactions: [],
+                stablecoinFlows: {},
+                alerts: []
+            };
+            
+            // 生成交易所资金流向
+            exchanges.forEach(ex => {
+                const change = (Math.random() - 0.5) * 10;
+                const btc = Math.random() * 500000 + 100000;
+                const inflow = btc * (change > 0 ? change / 100 : 0);
+                const outflow = btc * (change < 0 ? Math.abs(change) / 100 : 0);
+                
+                data.exchangeFlows[ex] = {
+                    inflow,
+                    outflow,
+                    net: inflow - outflow
+                };
+            });
+            
+            // 生成巨鲸交易
+            const whaleCount = Math.floor(Math.random() * 15) + 5;
+            for (let i = 0; i < whaleCount; i++) {
+                const isDeposit = Math.random() > 0.5;
+                const amount = Math.random() * 2000 + 100;
+                
+                data.whaleTransactions.push({
+                    hash: '0x' + Array(64).fill(0).map(() => 
+                        Math.floor(Math.random() * 16).toString(16)).join('').substring(0, 16) + '...',
+                    amount,
+                    type: isDeposit ? 'deposit' : 'withdrawal',
+                    timestamp: Date.now() - Math.random() * 3600000
+                });
+            }
+            
+            // 排序
+            data.whaleTransactions.sort((a, b) => b.amount - a.amount);
+            
+            // 生成稳定币数据
+            data.stablecoinFlows = {
+                USDT: { volume: Math.random() * 50000000000 + 30000000000 },
+                USDC: { volume: Math.random() * 20000000000 + 10000000000 },
+                DAI: { volume: Math.random() * 5000000000 + 2000000000 }
+            };
+            
+            // 生成预警
+            if (Math.random() > 0.7) {
+                data.alerts.push({
+                    type: 'WHALE_ACTIVITY',
+                    level: Math.random() > 0.5 ? 'urgent' : 'warning',
+                    message: `检测到 ${Math.floor(Math.random() * 10) + 3} 笔大额巨鲸交易`
+                });
+            }
+            
+            if (Math.random() > 0.8) {
+                const ex = exchanges[Math.floor(Math.random() * exchanges.length)];
+                const flow = data.exchangeFlows[ex];
+                if (Math.abs(flow.net) > 10000) {
+                    data.alerts.push({
+                        type: 'EXCHANGE_FLOW',
+                        level: 'warning',
+                        message: `${ex} 净${flow.net > 0 ? '流入' : '流出'} ${formatNumber(Math.abs(flow.net))} BTC`
+                    });
+                }
+            }
+            
+            return data;
+        }
+        
+        // 更新UI
+        function updateUI(data) {
+            currentData = data;
+            
+            // 更新时间
+            document.getElementById('lastUpdate').textContent = 
+                data.lastUpdate.toLocaleTimeString('zh-CN');
+            
+            // 计算市场评分
+            let score = 50;
+            const totalNetFlow = Object.values(data.exchangeFlows)
+                .reduce((sum, ex) => sum + ex.net, 0);
+            score += Math.min(Math.abs(totalNetFlow) / 10000, 20);
+            score += Math.min(data.whaleTransactions.length * 2, 10);
+            const totalStableVolume = Object.values(data.stablecoinFlows)
+                .reduce((sum, sc) => sum + sc.volume, 0);
+            score += Math.min(totalStableVolume / 10000000000, 20);
+            score = Math.min(Math.max(score, 0), 100);
+            
+            // 更新分数显示
+            const scoreValue = document.getElementById('scoreValue');
+            const scoreCircle = document.getElementById('scoreCircle');
+            scoreValue.textContent = Math.round(score);
+            scoreCircle.style.setProperty('--score', score + '%');
+            
+            // 更新分数颜色
+            if (score >= 70) {
+                scoreValue.style.background = 'linear-gradient(90deg, #00d4ff, #00ff88)';
+            } else if (score >= 40) {
+                scoreValue.style.background = 'linear-gradient(90deg, #ffc800, #ff8800)';
+            } else {
+                scoreValue.style.background = 'linear-gradient(90deg, #ff5050, #ff8800)';
+            }
+            
+            // 更新统计指标
+            document.getElementById('totalExchangeFlow').textContent = 
+                formatNumber(totalNetFlow);
+            document.getElementById('whaleCount').textContent = 
+                data.whaleTransactions.length;
+            document.getElementById('totalStableVolume').textContent = 
+                formatCurrency(totalStableVolume);
+            document.getElementById('alertCount').textContent = 
+                data.alerts.length;
+            
+            // 更新交易所数据
+            ['binance', 'coinbase', 'kraken'].forEach(ex => {
+                const flow = data.exchangeFlows[ex];
+                const netEl = document.getElementById(ex + 'Net');
+                netEl.textContent = formatNumber(Math.abs(flow.net));
+                netEl.className = 'flow-value ' + (flow.net >= 0 ? 'flow-positive' : 'flow-negative');
+                
+                document.getElementById(ex + 'Inflow').textContent = 
+                    formatNumber(flow.inflow);
+                document.getElementById(ex + 'Outflow').textContent = 
+                    formatNumber(flow.outflow);
+            });
+            
+            // 更新稳定币数据
+            ['USDT', 'USDC', 'DAI'].forEach(sc => {
+                document.getElementById(sc.toLowerCase() + 'Volume').textContent = 
+                    formatCurrency(data.stablecoinFlows[sc].volume);
+            });
+            
+            // 更新巨鲸交易列表
+            const whaleList = document.getElementById('whaleList');
+            whaleList.innerHTML = data.whaleTransactions.slice(0, 10).map((tx, i) => `
+                <div class="whale-item">
+                    <div>
+                        <div class="whale-amount">${formatNumber(tx.amount)} BTC</div>
+                        <div style="color: #666; font-size: 0.85em; margin-top: 5px;">
+                            ${tx.hash}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="whale-type type-${tx.type}">
+                            ${tx.type === 'deposit' ? '📥 转入' : '📤 转出'}
+                        </span>
+                        <div style="color: #666; font-size: 0.85em; margin-top: 5px;">
+                            ${Math.floor((Date.now() - tx.timestamp) / 60000)}分钟前
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // 更新预警列表
+            const alertsList = document.getElementById('alertsList');
+            if (data.alerts.length > 0) {
+                alertsList.innerHTML = data.alerts.map(alert => `
+                    <div class="alert-item alert-${alert.level}">
+                        <span class="alert-icon">
+                            ${alert.level === 'urgent' ? '🚨' : '⚠️'}
+                        </span>
+                        <div class="alert-content">
+                            <div class="alert-message">${alert.message}</div>
+                            <div class="alert-time">${new Date().toLocaleString('zh-CN')}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                alertsList.innerHTML = `
+                    <p style="color: #00ff88; text-align: center; padding: 20px;">
+                        ✅ 暂无异常预警，市场运行正常
+                    </p>
+                `;
+            }
+        }
+        
+        // 刷新数据
+        async function refreshData() {
+            const data = getMockData();
+            updateUI(data);
+        }
+        
+        // 开始自动刷新
+        function startAutoRefresh() {
+            if (autoRefreshInterval) return;
+            
+            autoRefreshInterval = setInterval(refreshData, 10000); // 每10秒刷新
+            refreshData();
+        }
+        
+        // 停止自动刷新
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshData();
+            startAutoRefresh();
+        });
+    </script>
+</body>
+</html>
